@@ -27,15 +27,15 @@ Usage:
   zabbix-agent-extension-elasticsearch [options]
 
 Options:
-  --type <type>                 Type of statistics: global (cluster and nodes)
-                                  or indices [default: global].
+  --type <type>                 Type of statistics: cluster, nodes 
+                                  or indices [default: cluster].
   -e --elasticsearch <dsn>      DSN of Elasticsearch server
                                   [default: ` + obtainESDSN() + `].
   -c --ca <path>                Path to custom CA.
                                   [default: ` + obtainCAPath() + `].
   --agg-group <group>           Group name which will be use for aggregate
                                   item values [default: None].
-  -u --user <name>              User for authenticate through 
+  -u --user <name>              User for authenticate through
                                   Elasticsearch API [default: None].
   -x --password <string>        Password for user [default: None].
 
@@ -49,8 +49,8 @@ Stats options:
                                   [default: None].
 
 Discovery options:
-  --discovery                   Run low-level discovery for determine
-                                  gc collectors, mem pools, boofer pools, etc.
+  --discovery                   Run low-level discovery to determine
+                                  gc collectors, mem pools, buffer pools, etc.
 
 Misc options:
   --version                     Show version.
@@ -145,7 +145,7 @@ Misc options:
 			prefix,
 		)
 
-	case "global":
+	case "cluster":
 		clusterHealth, err := getClusterHealth(
 			elasticDSN,
 			elasticsearchAuthToken,
@@ -156,6 +156,14 @@ Misc options:
 			os.Exit(1)
 		}
 
+		metrics = createClusterHealthMetrics(
+			hostname,
+			clusterHealth,
+			metrics,
+			prefix,
+		)
+
+	case "node":
 		nodesStats, err := getNodeStats(
 			elasticDSN,
 			elasticsearchAuthToken,
@@ -175,12 +183,6 @@ Misc options:
 			os.Exit(0)
 		}
 
-		metrics = createClusterHealthMetrics(
-			hostname,
-			clusterHealth,
-			metrics,
-			prefix,
-		)
 		metrics = createNodeStatsJVMMetrics(
 			hostname,
 			nodesStats,
